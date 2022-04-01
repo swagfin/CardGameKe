@@ -41,8 +41,8 @@ namespace CardGameKe
                             else
                             {
                                 Logger.LogInfo("Cardless, Picking Card....", $"PLAYER-{this.PlayerNo:N0}");
-                                Card cardPicked = CurrentGame.PickCard(this.PlayerNo);
-                                CardsOnHand.Add(cardPicked);
+                                List<Card> cardsPicked = CurrentGame.PickCard(this.PlayerNo, 1);
+                                CardsOnHand.AddRange(cardsPicked);
                             }
 
                         }

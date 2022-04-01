@@ -8,6 +8,7 @@ namespace CardGameKe
 {
     public class Card
     {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public CardIdentity CardIdentity { get; set; }
         public CardIdentityType CardIdentityType { get; set; }
     }
