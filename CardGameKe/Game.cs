@@ -59,8 +59,8 @@ namespace CardGameKe
  -----------
 |START CARD |
  -----------
-    {0}  
     {1}  
+    {0}  
 |           |
  -----------", startingCard.CardIdentityType, startingCard.CardIdentity.ToString().Replace("No", " ")));
 
@@ -74,28 +74,40 @@ namespace CardGameKe
             CurrentPlayerNo = 0;
             GameStatus = GameStatus.CLOSED;
         }
-        public void PlaceCard(int playerNo, Card card)
+        public void PlaceCard(int playerNo, List<Card> cards, bool onCard = false)
         {
-            if (card == null)
-                throw new Exception("Null card Placed");
-            this.CurrentStackCardsOnBoard.Add(card);
+            if (cards == null || cards.Count == 0)
+                throw new Exception("Null cards Placed");
             GameStatus = GameStatus.OPEN;
-            Logger.LogInfo(string.Format(@"
+            //CHECK PLAYER
+            if ((onCard && this.LastCardOnBoard?.CardIdentity == cards[0].CardIdentity) && (onCard && this.LastCardOnBoard?.CardIdentityType == cards[0].CardIdentityType))
+            {
+                EndGame(playerNo);
+                return;
+            }
+            foreach (Card card in cards)
+            {
+                this.CurrentStackCardsOnBoard.Add(card);
+                //Notify
+                Logger.LogInfo(string.Format(@"
  -----------
 |           |
-    {0}  
     {1}  
+    {0}  
 |           |
  -----------", card.CardIdentityType, card.CardIdentity.ToString().Replace("No", " ")));
+            }
             CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
             Logger.LogWarning($"Next Player is: PLAYER-{CurrentPlayerNo}");
             GameStatus = GameStatus.WAITINGPLAYERSCARD;
         }
 
+
         public List<Card> PickCard(int playerNo, int takeCount = 1)
         {
             if (takeCount <= 0 || takeCount > 10)
                 throw new Exception("Min Number of Take Count should more than 1 and less than 10");
+            Logger.LogInfo($"----- Player-{playerNo} Picking Card ------ :-(");
             List<Card> pickingCards = CurrentStackCardsAvailable.Take(takeCount).ToList();
             if (pickingCards == null || pickingCards.Count < takeCount)
             {
@@ -113,8 +125,8 @@ namespace CardGameKe
  -----------
 |  TOP CARD |
  -----------
-    {0}  
     {1}  
+    {0}  
 |A. SHUFFLE|
  -----------", lstCard.CardIdentityType, lstCard.CardIdentity.ToString().Replace("No", " ")));
                 //Proceed
@@ -132,6 +144,20 @@ namespace CardGameKe
             Logger.LogWarning($"Next Player is: PLAYER-{CurrentPlayerNo}");
             GameStatus = GameStatus.WAITINGPLAYERSCARD;
             return pickingCards;
+        }
+
+
+        private void EndGame(int playerNo)
+        {
+            Logger.LogWarning(string.Format(@"
+ -----------------
+           
+ //////   PLAYER \\\\\\  
+           [{0:N0}] 
+        WON THE GAME
+ 
+------------------------", playerNo));
+            StopGame();
         }
 
 

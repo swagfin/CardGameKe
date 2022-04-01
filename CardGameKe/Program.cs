@@ -13,7 +13,7 @@ namespace CardGameKe
         {
             Logger.LogInfo("++++++++++++ CARD GAME Ke ++++++++++++");
 
-            Game game = new Game(10, 4);
+            Game game = new Game(2, 4);
             game.StartGame();
             while (true)
             {
