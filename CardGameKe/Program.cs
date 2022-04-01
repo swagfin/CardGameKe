@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace CardGameKe
 {
@@ -13,7 +9,7 @@ namespace CardGameKe
         {
             Logger.LogInfo("++++++++++++ CARD GAME Ke ++++++++++++");
 
-            Game game = new Game(2, 4);
+            Game game = new Game(3, 4);
             game.StartGame();
             while (true)
             {

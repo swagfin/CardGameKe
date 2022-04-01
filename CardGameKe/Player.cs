@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace CardGameKe
 {
@@ -33,7 +31,11 @@ namespace CardGameKe
                         {
                             Logger.LogInfo("Playing....", $"PLAYER-{this.PlayerNo:N0} >> ({CardsOnHand.Count:N0} Cards On Hand) <<");
                             Card onDeckCard = this.CurrentGame.LastCardOnBoard;
-                            HandleLogicPlayGame(onDeckCard);
+                            if (this.PlayerNo == 1)
+                                HandleOwnersGamePlay(onDeckCard);
+                            else
+                                HandleLogicPlayGame(onDeckCard);
+
                         }
                     }
                     catch (Exception ex)
@@ -48,6 +50,32 @@ namespace CardGameKe
             t.Start();
         }
 
+        private void HandleOwnersGamePlay(Card onDeckCard)
+        {
+            Logger.LogInfo("Its your Turn to Play;\n");
+            int startAt = 0;
+            foreach (var card in CardsOnHand)
+            {
+                startAt++;
+                Logger.LogInfo($"{startAt}. {card.CardIdentity} | {card.CardIdentityType}");
+            }
+            startAt++;
+            Logger.LogInfo($"{startAt}. PICK CARD");
+            if (!int.TryParse(Console.ReadLine(), out int selectedVal) || selectedVal > startAt)
+                throw new Exception("Player selected value  was invalid...");
+            if (selectedVal == startAt)
+            {
+                List<Card> cardsPicked = CurrentGame.PickCard(this.PlayerNo, 1);
+                CardsOnHand.AddRange(cardsPicked);
+            }
+            else
+            {
+                Card selectedCard = CardsOnHand[selectedVal - 1];
+                CurrentGame.PlaceCard(this.PlayerNo, new List<Card> { selectedCard }, this.IsOnCard);
+                CardsOnHand.Remove(selectedCard);
+            }
+            this.IsOnCard = (CardsOnHand.Count == 1 && CardsOnHand.FirstOrDefault(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)) != null);
+        }
 
         private void HandleLogicPlayGame(Card onDeckCard)
         {
@@ -101,8 +129,6 @@ namespace CardGameKe
                 throw new Exception("Oops, Player is of Course Nothing to Decide");
 
             //Check if User can Win Game
-            this.IsOnCard = (CardsOnHand.Count == 1 && CardsOnHand.FirstOrDefault(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)) != null);
-            //Proceed
             if (cardsToCollect > 0)
             {
                 List<Card> cardsPicked = CurrentGame.PickCard(this.PlayerNo, cardsToCollect);
@@ -115,8 +141,7 @@ namespace CardGameKe
                     CardsOnHand.Remove(cardDecked);
             }
 
-
-
+            this.IsOnCard = (CardsOnHand.Count == 1 && CardsOnHand.FirstOrDefault(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)) != null);
         }
     }
 }
