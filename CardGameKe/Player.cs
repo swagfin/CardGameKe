@@ -30,7 +30,7 @@ namespace CardGameKe
                     {
                         if (CurrentGame.GameStatus == GameStatus.WAITINGPLAYERSCARD && CurrentGame.CurrentPlayerNo == this.PlayerNo)
                         {
-                            Logger.LogInfo("Playing....", $"PLAYER-{this.PlayerNo}");
+                            Logger.LogInfo("Playing....", $"PLAYER-{this.PlayerNo:N0} ({CardsOnHand.Count:N0} Cards On Hand)");
 
                             Card card = CardsOnHand.FirstOrDefault();
                             if (card != null)
@@ -40,7 +40,7 @@ namespace CardGameKe
                             }
                             else
                             {
-                                Logger.LogInfo("Cardless, Picking Card....", $"PLAYER-{this.PlayerNo}");
+                                Logger.LogInfo("Cardless, Picking Card....", $"PLAYER-{this.PlayerNo:N0}");
                                 Card cardPicked = CurrentGame.PickCard(this.PlayerNo);
                                 CardsOnHand.Add(cardPicked);
                             }

@@ -12,12 +12,8 @@ namespace CardGameKe
         static void Main(string[] args)
         {
             Logger.LogInfo("++++++++++++ CARD GAME Ke ++++++++++++");
-            List<Card> allCards = LogicFunctions.GetStackOfCards();
-            Console.WriteLine($"Total Cards: {allCards.Count}");
-            allCards.Shuffle();
 
-
-            Game game = new Game(2);
+            Game game = new Game(2, 4);
             game.StartGame();
             while (true)
             {

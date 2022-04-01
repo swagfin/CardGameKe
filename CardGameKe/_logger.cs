@@ -16,7 +16,7 @@ namespace CardGameKe
         }
         public static void LogWarning(string message, string owner = "")
         {
-            Console.BackgroundColor = ConsoleColor.DarkYellow;
+            Console.BackgroundColor = ConsoleColor.DarkMagenta;
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine(string.IsNullOrEmpty(owner) ? message : $"[{owner}]: {message}");
             Console.BackgroundColor = ConsoleColor.Black;
