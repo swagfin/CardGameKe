@@ -75,17 +75,18 @@ namespace CardGameKe
             if (cards == null || cards.Count == 0)
                 throw new Exception("Null cards Placed");
             GameStatus = GameStatus.OPEN;
-            //CHECK PLAYER
-            if ((onCard && this.LastCardOnBoard?.CardIdentity == cards[0].CardIdentity) && (onCard && this.LastCardOnBoard?.CardIdentityType == cards[0].CardIdentityType))
-            {
-                EndGame(playerNo);
-                return;
-            }
+
             foreach (Card card in cards)
             {
                 this.CurrentStackCardsOnBoard.Add(card);
                 //Notify
                 Logger.LogInfo(MagicCardGen.GetCardImage(card));
+            }
+            //CHECK PLAYER
+            if ((onCard && this.LastCardOnBoard?.CardIdentity == cards[0].CardIdentity) || (onCard && this.LastCardOnBoard?.CardIdentityType == cards[0].CardIdentityType))
+            {
+                EndGame(playerNo);
+                return;
             }
             CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
             //CHECK FOR JAMP
