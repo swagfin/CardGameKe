@@ -145,9 +145,15 @@ namespace CardGameKe
                 {
                     //Have an Answer to That
                     List<string> alreadyMarkedToDeck = cardsToDeck.Select(y => y.Id).ToList();
-                    List<Card> answers = CardsOnHand.Where(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)).Where(x => !alreadyMarkedToDeck.Contains(x.Id) && x.CardIdentityType == lastFrontCard.CardIdentityType).ToList();
-                    if (answers != null && answers.Count > 0)
-                        cardsToDeck.AddRange(answers.OrderByDescending(x => x.CardIdentity));
+                    //Answers with Numbers
+                    List<Card> answersWithNo = CardsOnHand.Where(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)).Where(x => !alreadyMarkedToDeck.Contains(x.Id) && x.CardIdentity == lastFrontCard.CardIdentity).ToList();
+                    //Answer By Type
+                    Card answersWithType = CardsOnHand.Where(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)).Where(x => !alreadyMarkedToDeck.Contains(x.Id) && x.CardIdentityType == lastFrontCard.CardIdentityType).FirstOrDefault();
+                    //Check Answers
+                    if (answersWithNo != null && answersWithNo.Count > 0)
+                        cardsToDeck.AddRange(answersWithNo.OrderByDescending(x => x.CardIdentity));
+                    else if (answersWithType != null)
+                        cardsToDeck.Add(answersWithType);
                     else
                     {
                         Logger.LogInfo($"Player-{this.PlayerNo} Has no Answer, Opted to Pick Card");

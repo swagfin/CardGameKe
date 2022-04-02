@@ -16,6 +16,7 @@ namespace CardGameKe
             get { return CurrentStackCardsOnBoard.LastOrDefault(); }
         }
         public LastGamePlayAction LastGamePlayAction { get; set; }
+        public bool IsGamePlayingForward { get; set; } = true;
 
         public Game(int noOfPlayers, int startingNoOfCardsPerPlayer = 4)
         {
@@ -76,29 +77,52 @@ namespace CardGameKe
                 throw new Exception("Null cards Placed");
             GameStatus = GameStatus.OPEN;
 
-            //CHECK WINNING
+            //CHECK WINNING || DON'T WIN IF CARDLESS
             if (onCard && cards.CardsCanFinishGameBasedOnCard(this.LastCardOnBoard))
-            {
-                foreach (Card card in cards)
-                    Logger.LogInfo(MagicCardGen.GetCardImage(card));
-                EndGame(playerNo);
-                return;
-            }
+                if (this.Players.Where(x => x.IsOnCard)?.Count() == 0)
+                    Logger.LogInfo("Can't Win Game Now, Looks Like there is a Player in Cardless Mode (Try Second Attempt)");
+                else
+                {
+                    foreach (Card card in cards)
+                        Logger.LogInfo(MagicCardGen.GetCardImage(card));
+                    EndGame(playerNo);
+                    return;
+                }
+            //Proceed
             foreach (Card card in cards)
             {
                 this.CurrentStackCardsOnBoard.Add(card);
                 //Notify
                 Logger.LogInfo(MagicCardGen.GetCardImage(card));
             }
-
-            CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
             //CHECK FOR JAMP
-            if (this.LastCardOnBoard?.CardIdentity == CardIdentity.Jack && this.LastGamePlayAction == LastGamePlayAction.CARDDECKED)
-            {
-                Logger.LogWarning($"PLAYER-{CurrentPlayerNo} JUMPED");
+            //Reverse Cards
+            cards.Reverse();
+            //!!KICKBACK FOR K
+            List<Card> cardsWithK = cards.Where(x => x.CardIdentity == CardIdentity.King).ToList();
+            if (cardsWithK != null && cardsWithK.Count > 0)
+                foreach (var kCard in cardsWithK?.Take(4))
+                {
+                    Logger.LogWarning($"!!KICKBACK INITIATED, OPP DIRECTION PLAY!!");
+                    IsGamePlayingForward = !IsGamePlayingForward;
+                }
+
+            //NEXT PLAYER
+            if (this.IsGamePlayingForward)
                 CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
-            }
-            Logger.LogWarning($"Next Player is: PLAYER-{CurrentPlayerNo}");
+            else
+                CurrentPlayerNo = (CurrentPlayerNo - 1 <= 0) ? Players.Count : CurrentPlayerNo += -1;
+
+            //!!JUMP FOR J
+            List<Card> cardsWithJ = cards.Where(x => x.CardIdentity == CardIdentity.Jack).ToList();
+            if (cardsWithJ != null && cardsWithJ.Count > 0)
+                foreach (var jCard in cardsWithJ?.Take(4))
+                {
+                    Logger.LogWarning($"PLAYER-{CurrentPlayerNo} JUMPED");
+                    CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
+                }
+
+            Logger.LogWarning(string.Format("Next Player is: PLAYER-{0}", CurrentPlayerNo, this.IsGamePlayingForward ? string.Empty : " {<Active Kick Back>}"));
             GameStatus = GameStatus.WAITINGPLAYERSCARD;
             LastGamePlayAction = LastGamePlayAction.CARDDECKED;
         }
@@ -139,11 +163,16 @@ namespace CardGameKe
             GameStatus = GameStatus.OPEN;
             if (moveNext)
             {
-                CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
-                Logger.LogWarning($"Next Player is: PLAYER-{CurrentPlayerNo}");
+                //NEXT PLAYER
+                if (this.IsGamePlayingForward)
+                    CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
+                else
+                    CurrentPlayerNo = (CurrentPlayerNo - 1 <= 0) ? Players.Count : CurrentPlayerNo += -1;
+                //Proceed
+                Logger.LogWarning(string.Format("Next Player is: PLAYER-{0}", CurrentPlayerNo, this.IsGamePlayingForward ? string.Empty : " {<Active Kick Back>}"));
                 LastGamePlayAction = LastGamePlayAction.CARDPICKED;
+                GameStatus = GameStatus.WAITINGPLAYERSCARD;
             }
-            GameStatus = GameStatus.WAITINGPLAYERSCARD;
             return pickingCards;
         }
 
