@@ -15,6 +15,7 @@ namespace CardGameKe
         {
             get { return CurrentStackCardsOnBoard.LastOrDefault(); }
         }
+        public LastGamePlayAction LastGamePlayAction { get; set; }
 
         public Game(int noOfPlayers, int startingNoOfCardsPerPlayer = 4)
         {
@@ -54,17 +55,14 @@ namespace CardGameKe
             CurrentStackCardsAvailable.Remove(startingCard);
             CurrentStackCardsOnBoard.Add(startingCard);
             Logger.LogInfo(string.Format(@"
- -----------
-|START CARD |
- -----------
-    {1}  
-    {0}  
-|           |
- -----------", startingCard.CardIdentityType, startingCard.CardIdentity.ToString().Replace("No", " ")));
+| START CARD |
+    {0}    
+", MagicCardGen.GetCardImage(startingCard)));
 
             Logger.LogInfo("Starting Game with Player 1...");
             CurrentPlayerNo = 1;
             GameStatus = GameStatus.WAITINGPLAYERSCARD;
+            LastGamePlayAction = LastGamePlayAction.CARDDECKED;
         }
         public void StopGame()
         {
@@ -87,17 +85,12 @@ namespace CardGameKe
             {
                 this.CurrentStackCardsOnBoard.Add(card);
                 //Notify
-                Logger.LogInfo(string.Format(@"
- -----------
-|           |
-    {1}  
-    {0}  
-|           |
- -----------", card.CardIdentityType, card.CardIdentity.ToString().Replace("No", " ")));
+                Logger.LogInfo(MagicCardGen.GetCardImage(card));
             }
             CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
             Logger.LogWarning($"Next Player is: PLAYER-{CurrentPlayerNo}");
             GameStatus = GameStatus.WAITINGPLAYERSCARD;
+            LastGamePlayAction = LastGamePlayAction.CARDDECKED;
         }
 
         public List<Card> PickCard(int playerNo, int takeCount = 1)
@@ -119,13 +112,10 @@ namespace CardGameKe
                 CurrentStackCardsOnBoard.Add(lstCard);
                 CurrentStackCardsAvailable.ShuffleCards();
                 Logger.LogInfo(string.Format(@"
- -----------
 |  TOP CARD |
- -----------
-    {1}  
-    {0}  
+    {0}    
 |A. SHUFFLE|
- -----------", lstCard.CardIdentityType, lstCard.CardIdentity.ToString().Replace("No", " ")));
+ -----------", MagicCardGen.GetCardImage(lstCard)));
                 //Proceed
                 pickingCards = CurrentStackCardsAvailable.Take(takeCount).ToList();
                 Logger.LogWarning("RESHUFFLING COMPLETED");
@@ -140,6 +130,7 @@ namespace CardGameKe
             CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
             Logger.LogWarning($"Next Player is: PLAYER-{CurrentPlayerNo}");
             GameStatus = GameStatus.WAITINGPLAYERSCARD;
+            LastGamePlayAction = LastGamePlayAction.CARDPICKED;
             return pickingCards;
         }
 
@@ -164,5 +155,10 @@ namespace CardGameKe
         OPEN,
         CARDSHUFFLING,
         WAITINGPLAYERSCARD
+    }
+    public enum LastGamePlayAction
+    {
+        CARDDECKED,
+        CARDPICKED,
     }
 }

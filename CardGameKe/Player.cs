@@ -89,7 +89,7 @@ namespace CardGameKe
             int cardsToCollect = 0;
             List<Card> cardsToDeck = new List<Card>();
             //Proceed
-            if (onDeckCard.CardIdentity == CardIdentity.No2)
+            if (onDeckCard.CardIdentity == CardIdentity.No2 && CurrentGame.LastGamePlayAction == LastGamePlayAction.CARDDECKED)
             {
                 Card returnCard = CardsOnHand.FirstOrDefault(x => x.CardIdentity == CardIdentity.Ace || x.CardIdentity == CardIdentity.No2);
                 if (returnCard == null)
@@ -103,7 +103,7 @@ namespace CardGameKe
                         cardsToDeck.AddRange(otherNo2Cards);
                 }
             }
-            else if (onDeckCard.CardIdentity == CardIdentity.No3)
+            else if (onDeckCard.CardIdentity == CardIdentity.No3 && CurrentGame.LastGamePlayAction == LastGamePlayAction.CARDDECKED)
             {
                 Card returnCard = CardsOnHand.FirstOrDefault(x => x.CardIdentity == CardIdentity.Ace || x.CardIdentity == CardIdentity.No3);
                 if (returnCard == null)
@@ -119,19 +119,21 @@ namespace CardGameKe
             }
             else
             {
-                Card placingCard = CardsOnHand.FirstOrDefault(x => x.CardIdentity == onDeckCard.CardIdentity || x.CardIdentityType == onDeckCard.CardIdentityType);
-                if (placingCard != null)
-                    cardsToDeck.Add(placingCard);
+                List<Card> cardsWithSameIdentity = CardsOnHand.Where(x => x.CardIdentity == onDeckCard.CardIdentity).OrderBy(x => x.CardIdentityType).ToList() ?? new List<Card>();
+                Card cardWithSameIdentityType = CardsOnHand.OrderBy(x => x.WinningProbability).FirstOrDefault(x => x.CardIdentityType == onDeckCard.CardIdentityType); //Ordering removing cards that can't WIN
+
+                if (cardsWithSameIdentity.Count > 0)
+                    cardsToDeck.AddRange(cardsWithSameIdentity);
+                else if (cardWithSameIdentityType != null)
+                    cardsToDeck.Add(cardWithSameIdentityType);
                 else
                     cardsToCollect += 1;
             }
 
             if (cardsToCollect > 0 && cardsToDeck.Count > 0)
                 throw new Exception("Oops, Player has Cards to Pick and Cards to Collect, Logic Error");
-
             if (cardsToCollect == 0 && cardsToDeck.Count == 0)
                 throw new Exception("Oops, Player is of Course Nothing to Decide");
-
             //Check if User can Win Game
             if (cardsToCollect > 0)
             {
@@ -148,4 +150,5 @@ namespace CardGameKe
             this.IsOnCard = (CardsOnHand.Count == 1 && CardsOnHand.FirstOrDefault(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)) != null);
         }
     }
+
 }

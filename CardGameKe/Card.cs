@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CardGameKe
 {
@@ -11,6 +7,26 @@ namespace CardGameKe
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public CardIdentity CardIdentity { get; set; }
         public CardIdentityType CardIdentityType { get; set; }
+        public int WinningProbability
+        {
+            get
+            {
+                if (SharedLogic.CanStartGamesCards.Contains(CardIdentity))
+                    return 100;
+                else if (CardIdentity == CardIdentity.King)
+                    return 50;
+                else if (CardIdentity == CardIdentity.Jack)
+                    return 40;
+                else if (CardIdentity == CardIdentity.Queen)
+                    return 30;
+                else if (CardIdentity == CardIdentity.No2)
+                    return 20;
+                else if (CardIdentity == CardIdentity.No3)
+                    return 10;
+                else
+                    return 0;
+            }
+        }
     }
     public enum CardIdentity
     {
