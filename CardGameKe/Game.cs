@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CardGameKe
 {
@@ -102,12 +100,11 @@ namespace CardGameKe
             GameStatus = GameStatus.WAITINGPLAYERSCARD;
         }
 
-
         public List<Card> PickCard(int playerNo, int takeCount = 1)
         {
             if (takeCount <= 0 || takeCount > 10)
                 throw new Exception("Min Number of Take Count should more than 1 and less than 10");
-            Logger.LogInfo($"----- Player-{playerNo} Picking Card ------ :-(");
+            Logger.LogInfo($"----- Player-{playerNo} Picking ({takeCount:N0}) Card(s) ------ :-(");
             List<Card> pickingCards = CurrentStackCardsAvailable.Take(takeCount).ToList();
             if (pickingCards == null || pickingCards.Count < takeCount)
             {
@@ -146,7 +143,6 @@ namespace CardGameKe
             return pickingCards;
         }
 
-
         private void EndGame(int playerNo)
         {
             Logger.LogWarning(string.Format(@"
@@ -159,7 +155,6 @@ namespace CardGameKe
 ------------------------", playerNo));
             StopGame();
         }
-
 
     }
     public enum GameStatus

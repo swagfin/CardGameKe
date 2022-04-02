@@ -75,6 +75,10 @@ namespace CardGameKe
                 CardsOnHand.Remove(selectedCard);
             }
             this.IsOnCard = (CardsOnHand.Count == 1 && CardsOnHand.FirstOrDefault(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)) != null);
+            if (this.IsOnCard)
+            {
+                Logger.LogWarning($"PLAYER {this.PlayerNo} ON CARD");
+            }
         }
 
         private void HandleLogicPlayGame(Card onDeckCard)
