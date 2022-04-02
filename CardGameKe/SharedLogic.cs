@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CardGameKe
 {
@@ -38,6 +36,26 @@ namespace CardGameKe
             {
                 return new List<CardIdentity> { CardIdentity.No4, CardIdentity.No5, CardIdentity.No6, CardIdentity.No7 };
             }
+        }
+
+        public static bool CardsCanFinishGame(this List<Card> cards)
+        {
+            if (cards == null || cards.Count == 0)
+                return false;
+            return cards.Where(x => CanStartGamesCards.Contains(x.CardIdentity)).ToList()?.Count() == cards.Count;
+        }
+        public static bool CardsCanFinishGameBasedOnCard(this List<Card> cards, Card lastCardOnDeck)
+        {
+            if (!CardsCanFinishGame(cards))
+                return false;
+            //Can Finish with all Numbers
+            bool canFinishWithAllNumbers = cards.Where(x => x.CardIdentity == lastCardOnDeck.CardIdentity).ToList()?.Count() == cards.Count;
+            if (canFinishWithAllNumbers)
+                return true;
+            //Can Finish with Only One Card
+            if (cards.Count == 1 && cards[0]?.CardIdentityType == lastCardOnDeck.CardIdentityType)
+                return true;
+            return false;
         }
     }
 }

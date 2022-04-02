@@ -29,7 +29,8 @@ namespace CardGameKe
                     {
                         if (CurrentGame.GameStatus == GameStatus.WAITINGPLAYERSCARD && CurrentGame.CurrentPlayerNo == this.PlayerNo)
                         {
-                            Logger.LogInfo("Playing....", $"PLAYER-{this.PlayerNo:N0} >> ({CardsOnHand.Count:N0} Cards On Hand) <<");
+                            string isOnCardNotice = (this.IsOnCard) ? "=== [ !! ON CARD !!] ===" : string.Empty;
+                            Logger.LogInfo("Playing....", $"PLAYER-{this.PlayerNo:N0} {isOnCardNotice} >> ({CardsOnHand.Count:N0} Cards On Hand) <<");
                             Card onDeckCard = this.CurrentGame.LastCardOnBoard;
                             if (this.PlayerNo == 1)
                                 HandleOwnersGamePlay(onDeckCard);
@@ -44,7 +45,10 @@ namespace CardGameKe
                     }
 
                     //Sleep
-                    Thread.Sleep(new Random().Next(2000, 8000));
+                    if (this.PlayerNo == 1)
+                        Thread.Sleep(1000);
+                    else
+                        Thread.Sleep(new Random().Next(2000, 8000));
                 }
             });
             t.Start();
@@ -61,7 +65,7 @@ namespace CardGameKe
             }
             startAt++;
             Logger.LogInfo($"{startAt}. PICK CARD");
-            if (!int.TryParse(Console.ReadLine(), out int selectedVal) || selectedVal > startAt)
+            if (!int.TryParse(Console.ReadLine().Trim(), out int selectedVal) || selectedVal > startAt)
                 throw new Exception("Player selected value  was invalid...");
             if (selectedVal == startAt)
             {
@@ -130,24 +134,42 @@ namespace CardGameKe
                     cardsToCollect += 1;
             }
 
-            if (cardsToCollect > 0 && cardsToDeck.Count > 0)
-                throw new Exception("Oops, Player has Cards to Pick and Cards to Collect, Logic Error");
             if (cardsToCollect == 0 && cardsToDeck.Count == 0)
                 throw new Exception("Oops, Player is of Course Nothing to Decide");
-            //Check if User can Win Game
+            //Place Cards First
+            if (cardsToDeck.Count > 0)
+            {
+                //Check if Last No if 8
+                Card lastFrontCard = cardsToDeck[cardsToDeck.Count - 1];
+                if (lastFrontCard.CardIdentity == CardIdentity.Queen || lastFrontCard.CardIdentity == CardIdentity.No8)
+                {
+                    //Have an Answer to That
+                    List<string> alreadyMarkedToDeck = cardsToDeck.Select(y => y.Id).ToList();
+                    List<Card> answers = CardsOnHand.Where(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)).Where(x => !alreadyMarkedToDeck.Contains(x.Id) && x.CardIdentityType == lastFrontCard.CardIdentityType).ToList();
+                    if (answers != null && answers.Count > 0)
+                        cardsToDeck.AddRange(answers.OrderByDescending(x => x.CardIdentity));
+                    else
+                    {
+                        Logger.LogInfo($"Player-{this.PlayerNo} Has no Answer, Opted to Pick Card");
+                        List<Card> noAnswerCardsPicked = CurrentGame.PickCard(this.PlayerNo, 1, false);
+                        CardsOnHand.AddRange(noAnswerCardsPicked);
+                    }
+
+                }
+                //Proceed With Place Cards on Deck
+                CurrentGame.PlaceCard(this.PlayerNo, cardsToDeck, this.IsOnCard);
+                foreach (var cardDecked in cardsToDeck)
+                    CardsOnHand.Remove(cardDecked);
+            }
+            //Pick Cards Later
             if (cardsToCollect > 0)
             {
                 List<Card> cardsPicked = CurrentGame.PickCard(this.PlayerNo, cardsToCollect);
                 CardsOnHand.AddRange(cardsPicked);
             }
-            else if (cardsToDeck.Count > 0)
-            {
-                CurrentGame.PlaceCard(this.PlayerNo, cardsToDeck, this.IsOnCard);
-                foreach (var cardDecked in cardsToDeck)
-                    CardsOnHand.Remove(cardDecked);
-            }
 
-            this.IsOnCard = (CardsOnHand.Count == 1 && CardsOnHand.FirstOrDefault(x => SharedLogic.CanStartGamesCards.Contains(x.CardIdentity)) != null);
+            //if all cards left can finish game
+            this.IsOnCard = CardsOnHand.CardsCanFinishGame();
         }
     }
 

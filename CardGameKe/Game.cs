@@ -76,18 +76,21 @@ namespace CardGameKe
                 throw new Exception("Null cards Placed");
             GameStatus = GameStatus.OPEN;
 
+            //CHECK WINNING
+            if (onCard && cards.CardsCanFinishGameBasedOnCard(this.LastCardOnBoard))
+            {
+                foreach (Card card in cards)
+                    Logger.LogInfo(MagicCardGen.GetCardImage(card));
+                EndGame(playerNo);
+                return;
+            }
             foreach (Card card in cards)
             {
                 this.CurrentStackCardsOnBoard.Add(card);
                 //Notify
                 Logger.LogInfo(MagicCardGen.GetCardImage(card));
             }
-            //CHECK PLAYER
-            if ((onCard && this.LastCardOnBoard?.CardIdentity == cards[0].CardIdentity) || (onCard && this.LastCardOnBoard?.CardIdentityType == cards[0].CardIdentityType))
-            {
-                EndGame(playerNo);
-                return;
-            }
+
             CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
             //CHECK FOR JAMP
             if (this.LastCardOnBoard?.CardIdentity == CardIdentity.Jack && this.LastGamePlayAction == LastGamePlayAction.CARDDECKED)
@@ -100,7 +103,7 @@ namespace CardGameKe
             LastGamePlayAction = LastGamePlayAction.CARDDECKED;
         }
 
-        public List<Card> PickCard(int playerNo, int takeCount = 1)
+        public List<Card> PickCard(int playerNo, int takeCount = 1, bool moveNext = true)
         {
             if (takeCount <= 0 || takeCount > 10)
                 throw new Exception("Min Number of Take Count should more than 1 and less than 10");
@@ -134,10 +137,13 @@ namespace CardGameKe
                     CurrentStackCardsAvailable.Remove(rec);
 
             GameStatus = GameStatus.OPEN;
-            CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
-            Logger.LogWarning($"Next Player is: PLAYER-{CurrentPlayerNo}");
+            if (moveNext)
+            {
+                CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
+                Logger.LogWarning($"Next Player is: PLAYER-{CurrentPlayerNo}");
+                LastGamePlayAction = LastGamePlayAction.CARDPICKED;
+            }
             GameStatus = GameStatus.WAITINGPLAYERSCARD;
-            LastGamePlayAction = LastGamePlayAction.CARDPICKED;
             return pickingCards;
         }
 
