@@ -88,6 +88,12 @@ namespace CardGameKe
                 Logger.LogInfo(MagicCardGen.GetCardImage(card));
             }
             CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
+            //CHECK FOR JAMP
+            if (this.LastCardOnBoard?.CardIdentity == CardIdentity.Jack && this.LastGamePlayAction == LastGamePlayAction.CARDDECKED)
+            {
+                Logger.LogWarning($"PLAYER-{CurrentPlayerNo} JUMPED");
+                CurrentPlayerNo = (CurrentPlayerNo + 1 > Players.Count) ? 1 : CurrentPlayerNo += 1;
+            }
             Logger.LogWarning($"Next Player is: PLAYER-{CurrentPlayerNo}");
             GameStatus = GameStatus.WAITINGPLAYERSCARD;
             LastGamePlayAction = LastGamePlayAction.CARDDECKED;
