@@ -34,7 +34,7 @@ namespace CardGameKe
         {
             get
             {
-                return new List<CardIdentity> { CardIdentity.No4, CardIdentity.No5, CardIdentity.No6, CardIdentity.No7 };
+                return new List<CardIdentity> { CardIdentity.No4, CardIdentity.No5, CardIdentity.No6, CardIdentity.No7, CardIdentity.No9, CardIdentity.No10 };
             }
         }
 
