@@ -79,8 +79,15 @@ namespace CardGameKe
 
             //CHECK WINNING || DON'T WIN IF CARDLESS
             if (onCard && cards.CardsCanFinishGameBasedOnCard(this.LastCardOnBoard))
-                if (this.Players.Where(x => x.IsOnCard)?.Count() == 0)
-                    Logger.LogInfo("Can't Win Game Now, Looks Like there is a Player in Cardless Mode (Try Second Attempt)");
+            {
+                List<Player> playersCardless = this.Players.Where(x => x.CardsOnHand.Count == 0).ToList();
+                if (playersCardless != null && playersCardless.Count > 0)
+                {
+                    string message = $"Can't Win Game Now, the following ({ playersCardless.Count:NO}) Player(s) are int Cardless Mode;";
+                    foreach (var player in playersCardless)
+                        message = $"{message}\n >>> Player No: {player.PlayerNo}";
+                    Logger.LogInfo(message);
+                }
                 else
                 {
                     foreach (Card card in cards)
@@ -88,6 +95,7 @@ namespace CardGameKe
                     EndGame(playerNo);
                     return;
                 }
+            }
             //Proceed
             foreach (Card card in cards)
             {
